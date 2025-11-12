@@ -9,13 +9,15 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/openspec/changes/*/tasks.md"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "openspec.helloWorld",
-        "title": "Hello World"
+        "command": "openspec.runTask",
+        "title": "OpenSpec: Run Task"
       }
     ]
   },

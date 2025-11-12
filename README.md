@@ -1,71 +1,67 @@
-# openspec README
+# OpenSpec VS Code Extension
 
-This is the README for your extension "openspec". After writing up a brief description, we recommend including the following sections.
+The complimentary extension for using OpenSpec with VS Code.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Task Execution with AI Chat
 
-For example if there is an image subfolder under your extension project workspace:
+Run OpenSpec tasks directly from your `tasks.md` file with full context automatically injected into VS Code's AI chat.
 
-\!\[feature X\]\(images/feature-x.png\)
+**How it works:**
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1. Open any `tasks.md` file in `openspec/changes/<change-id>/tasks.md`
+2. You'll see a "▶️ Start task" or "🔵 Continue task" button above each task
+3. Click the button to start an AI chat session with:
+   - OpenSpec methodology (`AGENTS.md`)
+   - Project conventions (`project.md`)
+   - Change proposal (`proposal.md`)
+   - Technical design (`design.md` if exists)
+   - All spec deltas for the change
+   - Previous tasks for context
+   - The current task to implement
+
+The AI assistant will have all the context needed to help you implement the task following OpenSpec conventions.
+
+**Status Indicators:**
+- ⚪ Not started: `- [ ]` Task not yet begun
+- 🔵 In progress: `- [-]` or `- [~]` Currently working
+- ✅ Completed: `- [x]` Finished
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.106.0 or higher
+- OpenSpec-initialized workspace
+- GitHub Copilot (recommended) or other AI chat extension
+
+## Usage
+
+1. Open a workspace with OpenSpec structure (`openspec/` directory)
+2. Navigate to any `tasks.md` file in `openspec/changes/*/tasks.md`
+3. Click the "▶️ Start task" CodeLens above any task
+4. The AI chat will open with full context
+
+If the Chat API is not available, the context will be copied to your clipboard - just paste it into your AI assistant.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+No configuration needed for MVP. Just open a tasks.md file and start clicking!
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- First version MVP - more features coming soon
+- Tree view for task navigation (planned)
+- Task status toggling (planned)
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial MVP release:
+- CodeLens "Run Task" buttons in tasks.md files
+- Automatic context injection for AI chat
+- Support for task status indicators
 
 ---
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
 **Enjoy!**
