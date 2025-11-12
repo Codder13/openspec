@@ -19,31 +19,21 @@ export async function runTask(task: Task): Promise<void> {
     const context = await buildContext(task, task.changeId, workspaceRoot);
 
     // Format prompt
-    const prompt = formatPrompt(context);
+    const prompt = formatPrompt(context, task.changeId);
 
-    // Try to send to chat in a new session
+    // Try to send to chat
     try {
-      // Open a new chat session
-      await vscode.commands.executeCommand("workbench.action.chat.open");
-      // Small delay to ensure chat is ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      // Send the prompt
-      await vscode.commands.executeCommand(
-        "workbench.action.chat.sendToNewChat",
-        {
-          message: prompt,
-        }
-      );
+      // Use the chat API to start a new chat with the prompt
+      await vscode.commands.executeCommand("workbench.action.chat.open", {
+        query: prompt,
+      });
     } catch (error) {
       // Fallback: copy to clipboard
       await vscode.env.clipboard.writeText(prompt);
       const action = await vscode.window.showInformationMessage(
-        "Context copied to clipboard. Chat API not available. Paste into your AI assistant.",
-        "Open Chat"
+        "Context copied to clipboard. Paste it into the chat that just opened.",
+        "OK"
       );
-      if (action === "Open Chat") {
-        await vscode.commands.executeCommand("workbench.action.chat.open");
-      }
     }
   } catch (error) {
     vscode.window.showErrorMessage(

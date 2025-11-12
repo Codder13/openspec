@@ -7,7 +7,7 @@ export async function buildContext(
   task: Task,
   changeId: string,
   workspaceRoot: string
-): Promise<TaskContext> {
+): Promise<TaskContext & { changeRoot: string; openspecRoot: string }> {
   const openspecRoot = path.join(workspaceRoot, "openspec");
   const changeRoot = path.join(openspecRoot, "changes", changeId);
 
@@ -38,43 +38,48 @@ export async function buildContext(
     specs,
     previousTasks,
     currentTask: task,
+    changeRoot,
+    openspecRoot,
   };
 }
 
-export function formatPrompt(context: TaskContext): string {
-  let prompt = "# OpenSpec Task Execution Context\n\n";
+export function formatPrompt(
+  context: TaskContext & { changeRoot: string; openspecRoot: string },
+  changeId: string
+): string {
+  let prompt = "# OpenSpec Task Execution\n\n";
 
-  prompt += "## OpenSpec Methodology\n\n";
-  prompt += context.agentsMd;
-  prompt += "\n\n";
+  prompt += "## Context Files\n\n";
+  prompt +=
+    "Please read and follow the methodology and conventions from these files:\n\n";
+  prompt += `- @${path.join(context.openspecRoot, "AGENTS.md")}\n`;
 
   if (context.projectMd) {
-    prompt += "## Project Context\n\n";
-    prompt += context.projectMd;
-    prompt += "\n\n";
+    prompt += `- @${path.join(context.openspecRoot, "project.md")}\n`;
   }
 
-  prompt += "## Change Proposal\n\n";
-  prompt += context.proposalMd;
-  prompt += "\n\n";
+  prompt += `- @${path.join(context.changeRoot, "proposal.md")}\n`;
 
   if (context.designMd) {
-    prompt += "## Technical Design\n\n";
-    prompt += context.designMd;
-    prompt += "\n\n";
+    prompt += `- @${path.join(context.changeRoot, "design.md")}\n`;
   }
 
   if (context.specs.length > 0) {
-    prompt += "## Specification Deltas\n\n";
+    prompt += "\n### Specification Deltas\n\n";
     for (const spec of context.specs) {
-      prompt += `### ${spec.capability}\n\n`;
-      prompt += spec.content;
-      prompt += "\n\n";
+      prompt += `- @${path.join(
+        context.changeRoot,
+        "specs",
+        spec.capability,
+        "spec.md"
+      )}\n`;
     }
   }
 
+  prompt += "\n";
+
   if (context.previousTasks.length > 0) {
-    prompt += "## Previous Tasks (for context)\n\n";
+    prompt += "## Previous Tasks (completed)\n\n";
     for (const prevTask of context.previousTasks) {
       const indent = "  ".repeat(prevTask.level);
       const statusIcon =
@@ -98,11 +103,10 @@ export function formatPrompt(context: TaskContext): string {
 
   prompt += "## Instructions\n\n";
   prompt +=
-    "Please implement the current task above following OpenSpec methodology and project conventions. ";
+    "Please implement the current task above following OpenSpec methodology and project conventions from the context files. ";
   prompt +=
-    "Use the specification deltas to understand what requirements to implement. ";
-  prompt +=
-    "Previous tasks provide context about what has already been completed.\n";
+    "Review the specification deltas to understand what requirements to implement. ";
+  prompt += "Previous tasks show what has already been completed.\n";
 
   return prompt;
 }
