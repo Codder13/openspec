@@ -21,11 +21,19 @@ export async function runTask(task: Task): Promise<void> {
     // Format prompt
     const prompt = formatPrompt(context);
 
-    // Try to send to chat
+    // Try to send to chat in a new session
     try {
-      await vscode.commands.executeCommand("workbench.action.chat.open", {
-        query: prompt,
-      });
+      // Open a new chat session
+      await vscode.commands.executeCommand("workbench.action.chat.open");
+      // Small delay to ensure chat is ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Send the prompt
+      await vscode.commands.executeCommand(
+        "workbench.action.chat.sendToNewChat",
+        {
+          message: prompt,
+        }
+      );
     } catch (error) {
       // Fallback: copy to clipboard
       await vscode.env.clipboard.writeText(prompt);
