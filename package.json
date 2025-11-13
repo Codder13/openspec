@@ -40,7 +40,8 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "check": "biome check --reporter=summary"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.5",

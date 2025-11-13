@@ -81,13 +81,19 @@ export class TaskDecorator {
       if (line.match(/^##\s+Phase\s+\d+:/)) {
         const phaseTasks = this.getTasksForPhase(tasks, i, lines);
 
-        // Find the end of the phase (next phase or end of file)
+        // Find the end of the phase (next phase header, next ## heading, or end of file)
         let endLine = lines.length - 1;
         for (let j = i + 1; j < lines.length; j++) {
-          if (lines[j].match(/^##\s+Phase\s+\d+:/)) {
+          if (lines[j].match(/^##\s+/)) {
+            // Stop before the next heading
             endLine = j - 1;
             break;
           }
+        }
+
+        // Trim trailing empty lines to avoid gaps
+        while (endLine > i && lines[endLine].trim() === "") {
+          endLine--;
         }
 
         const allCompleted =
@@ -142,19 +148,22 @@ export class TaskDecorator {
       }
     }
 
-    // Collect all tasks between this phase and the next
-    const collectTasks = (taskList: Task[]) => {
-      for (const task of taskList) {
-        if (task.line > phaseLineNum && task.line < endLine) {
-          phaseTasks.push(task);
-        }
-        if (task.children.length > 0) {
-          collectTasks(task.children);
-        }
+    // Collect all tasks between this phase and the next (including all nested children)
+    const collectTasksRecursively = (task: Task) => {
+      if (task.line > phaseLineNum && task.line < endLine) {
+        phaseTasks.push(task);
+      }
+      // Always collect children recursively
+      for (const child of task.children) {
+        collectTasksRecursively(child);
       }
     };
 
-    collectTasks(tasks);
+    // Start from all top-level tasks
+    for (const task of tasks) {
+      collectTasksRecursively(task);
+    }
+
     return phaseTasks;
   }
 

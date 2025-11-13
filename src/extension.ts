@@ -72,13 +72,31 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  // Watch for changes to tasks.md files to refresh CodeLens
+  // Watch for changes to tasks.md files to refresh CodeLens and decorations
   const fileWatcher = vscode.workspace.createFileSystemWatcher(
     "**/openspec/changes/*/tasks.md"
   );
-  fileWatcher.onDidChange(() => codeLensProvider.refresh());
-  fileWatcher.onDidCreate(() => codeLensProvider.refresh());
-  fileWatcher.onDidDelete(() => codeLensProvider.refresh());
+  fileWatcher.onDidChange(() => {
+    codeLensProvider.refresh();
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      taskDecorator.updateDecorations(editor);
+    }
+  });
+  fileWatcher.onDidCreate(() => {
+    codeLensProvider.refresh();
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      taskDecorator.updateDecorations(editor);
+    }
+  });
+  fileWatcher.onDidDelete(() => {
+    codeLensProvider.refresh();
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      taskDecorator.updateDecorations(editor);
+    }
+  });
   context.subscriptions.push(fileWatcher);
 }
 
