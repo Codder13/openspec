@@ -1,13 +1,19 @@
 {
   "name": "openspec",
-  "displayName": "openspec",
+  "displayName": "OpenSpec",
   "description": "The complimentary extension for using openspec with VS Code",
   "version": "0.0.1",
+  "publisher": "Codder13",
+  "icon": "public/openspec_logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Codder13/openspec.git"
+  },
   "engines": {
     "vscode": "^1.106.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
   ],
   "activationEvents": [
     "workspaceContains:**/openspec/changes/*/tasks.md"

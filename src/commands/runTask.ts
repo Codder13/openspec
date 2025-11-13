@@ -23,7 +23,11 @@ export async function runTask(task: Task): Promise<void> {
 
     // Try to send to chat
     try {
-      // Use the chat API to start a new chat with the prompt
+      // First, open a new chat session
+      await vscode.commands.executeCommand("workbench.action.chat.newChat");
+      // Small delay to ensure new chat is created
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Send the prompt to the new chat
       await vscode.commands.executeCommand("workbench.action.chat.open", {
         query: prompt,
       });
@@ -31,9 +35,12 @@ export async function runTask(task: Task): Promise<void> {
       // Fallback: copy to clipboard
       await vscode.env.clipboard.writeText(prompt);
       const action = await vscode.window.showInformationMessage(
-        "Context copied to clipboard. Paste it into the chat that just opened.",
-        "OK"
+        "Context copied to clipboard. Paste it into the chat.",
+        "Open Chat"
       );
+      if (action === "Open Chat") {
+        await vscode.commands.executeCommand("workbench.action.chat.open");
+      }
     }
   } catch (error) {
     vscode.window.showErrorMessage(
