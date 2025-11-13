@@ -50,7 +50,7 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
             const allCompleted = this.areAllTasksCompleted(phaseTasks);
 
             const title = allCompleted
-              ? "$(pass-filled) Phase completed"
+              ? "$(check-all) Phase completed"
               : "$(run-all) Run entire phase";
 
             codeLenses.push(
@@ -73,7 +73,7 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
           let title: string;
           if (task.status === "completed") {
             // Green checkmark for completed tasks
-            title = "$(pass-filled) Task completed";
+            title = "$(check) Task completed";
           } else if (task.status === "in-progress") {
             // Blue/gray for in-progress
             title = "$(debug-start) Continue task";
