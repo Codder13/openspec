@@ -1,61 +1,71 @@
 {
-	"name": "openspec",
-	"displayName": "OpenSpec",
-	"description": "The complimentary extension for using openspec with VS Code",
-	"version": "0.0.2",
-	"publisher": "Codder13",
-	"icon": "public/openspec_logo.png",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Codder13/openspec.git"
-	},
-	"engines": {
-		"vscode": "^1.106.0"
-	},
-	"categories": [
-		"Visualization"
-	],
-	"activationEvents": [
-		"workspaceContains:**/openspec/changes/*/tasks.md"
-	],
-	"main": "./dist/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "openspec.runTask",
-				"title": "OpenSpec: Run Task"
-			},
-			{
-				"command": "openspec.runPhase",
-				"title": "OpenSpec: Run Phase"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "pnpm run package",
-		"compile": "webpack",
-		"watch": "webpack --watch",
-		"package": "webpack --mode production --devtool hidden-source-map",
-		"compile-tests": "tsc -p . --outDir out",
-		"watch-tests": "tsc -p . -w --outDir out",
-		"pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-		"lint": "eslint src",
-		"test": "vscode-test",
-		"check": "biome check --reporter=summary",
-		"format": "biome format --write"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.5",
-		"@types/mocha": "^10.0.10",
-		"@types/node": "22.x",
-		"@types/vscode": "^1.106.0",
-		"@vscode/test-cli": "^0.0.12",
-		"@vscode/test-electron": "^2.5.2",
-		"eslint": "^9.39.1",
-		"ts-loader": "^9.5.4",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.46.3",
-		"webpack": "^5.102.1",
-		"webpack-cli": "^6.0.1"
-	}
+  "name": "openspec",
+  "displayName": "OpenSpec",
+  "description": "The complimentary extension for using openspec with VS Code",
+  "version": "0.0.2",
+  "publisher": "Codder13",
+  "icon": "public/openspec_logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Codder13/openspec.git"
+  },
+  "engines": {
+    "vscode": "^1.106.0"
+  },
+  "categories": [
+    "Visualization"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/openspec/changes/*/tasks.md"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "openspec.runTask",
+        "title": "OpenSpec: Run Task"
+      },
+      {
+        "command": "openspec.runPhase",
+        "title": "OpenSpec: Run Phase"
+      }
+    ],
+    "configuration": {
+      "title": "OpenSpec",
+      "properties": {
+        "openspec.showIndividualTaskButtons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show individual task run buttons. When disabled, only phase-level run buttons are displayed."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "check": "biome check --reporter=summary",
+    "format": "biome format --write"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.5",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.106.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.1",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
+  }
 }

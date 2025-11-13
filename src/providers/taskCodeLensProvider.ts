@@ -33,6 +33,11 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
       const tasks = parseTasksFile(document.getText(), changeId);
       const codeLenses: vscode.CodeLens[] = [];
 
+      // Check if individual task buttons should be shown
+      const showIndividualTasks = vscode.workspace
+        .getConfiguration("openspec")
+        .get<boolean>("showIndividualTaskButtons", true);
+
       // Detect phase headers and collect their tasks
       const lines = document.getText().split("\n");
       for (let i = 0; i < lines.length; i++) {
@@ -64,40 +69,43 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
         }
       }
 
-      // Helper to process tasks recursively
-      const processTasks = (taskList: typeof tasks) => {
-        for (const task of taskList) {
-          const line = document.lineAt(task.line);
-          const range = new vscode.Range(line.range.start, line.range.start);
+      // Helper to process tasks recursively (only if setting is enabled)
+      if (showIndividualTasks) {
+        const processTasks = (taskList: typeof tasks) => {
+          for (const task of taskList) {
+            const line = document.lineAt(task.line);
+            const range = new vscode.Range(line.range.start, line.range.start);
 
-          let title: string;
-          if (task.status === "completed") {
-            // Green checkmark for completed tasks
-            title = "$(check) Task completed";
-          } else if (task.status === "in-progress") {
-            // Blue/gray for in-progress
-            title = "$(debug-start) Continue task";
-          } else {
-            // Gray for not started
-            title = "$(debug-start) Start task";
+            let title: string;
+            if (task.status === "completed") {
+              // Green checkmark for completed tasks
+              title = "$(check) Task completed";
+            } else if (task.status === "in-progress") {
+              // Blue/gray for in-progress
+              title = "$(debug-start) Continue task";
+            } else {
+              // Gray for not started
+              title = "$(debug-start) Start task";
+            }
+
+            codeLenses.push(
+              new vscode.CodeLens(range, {
+                title: title,
+                command: "openspec.runTask",
+                arguments: [task],
+              })
+            );
+
+            // Process children
+            if (task.children.length > 0) {
+              processTasks(task.children);
+            }
           }
+        };
 
-          codeLenses.push(
-            new vscode.CodeLens(range, {
-              title: title,
-              command: "openspec.runTask",
-              arguments: [task],
-            })
-          );
+        processTasks(tasks);
+      }
 
-          // Process children
-          if (task.children.length > 0) {
-            processTasks(task.children);
-          }
-        }
-      };
-
-      processTasks(tasks);
       return codeLenses;
     } catch (error) {
       console.error("Error providing CodeLens:", error);

@@ -45,7 +45,25 @@ If the Chat API is not available, the context will be copied to your clipboard -
 
 ## Extension Settings
 
-No configuration needed for MVP. Just open a tasks.md file and start clicking!
+This extension contributes the following settings:
+
+* `openspec.showIndividualTaskButtons`: Enable/disable individual task run buttons. When set to `false`, only phase-level "Run entire phase" buttons are displayed for a cleaner view. (default: `true`)
+
+### Customizing CodeLens Appearance
+
+To change the font size of the CodeLens buttons (Start task, Run entire phase, etc.), adjust your VS Code settings:
+
+1. Open Settings (Cmd+, or Ctrl+,)
+2. Search for "editor.codeLens"
+3. Adjust `editor.codeLensFontSize` to your preferred size (e.g., `12`, `14`, `16`)
+
+Or add to your `settings.json`:
+```json
+{
+  "editor.codeLensFontSize": 14,
+  "openspec.showIndividualTaskButtons": false  // Optional: hide individual task buttons
+}
+```
 
 ## Known Issues
 
