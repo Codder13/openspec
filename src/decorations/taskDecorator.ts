@@ -3,41 +3,29 @@ import { parseTasksFile } from "../parsers/taskParser";
 import type { Task } from "../models/task";
 
 export class TaskDecorator {
-  private taskDecorationType: vscode.TextEditorDecorationType;
-  private completedDecorationType: vscode.TextEditorDecorationType;
-  private inProgressDecorationType: vscode.TextEditorDecorationType;
+  private grayBarDecorationType: vscode.TextEditorDecorationType;
+  private greenBarDecorationType: vscode.TextEditorDecorationType;
   private phaseHeaderDecorationType: vscode.TextEditorDecorationType;
-  private completedPhaseDecorationType: vscode.TextEditorDecorationType;
+  private completedPhaseHeaderDecorationType: vscode.TextEditorDecorationType;
 
   constructor() {
-    // Gray left border for not-started tasks
-    this.taskDecorationType = vscode.window.createTextEditorDecorationType({
+    // Gray left border for connecting bars and incomplete phases
+    this.grayBarDecorationType = vscode.window.createTextEditorDecorationType({
       borderWidth: "0 0 0 3px",
       borderStyle: "solid",
       borderColor: new vscode.ThemeColor("editorLineNumber.foreground"),
       isWholeLine: true,
     });
 
-    // Green left border for completed tasks
-    this.completedDecorationType = vscode.window.createTextEditorDecorationType(
-      {
-        borderWidth: "0 0 0 3px",
-        borderStyle: "solid",
-        borderColor: new vscode.ThemeColor("testing.iconPassed"),
-        isWholeLine: true,
-      }
-    );
+    // Green left border for completed phases
+    this.greenBarDecorationType = vscode.window.createTextEditorDecorationType({
+      borderWidth: "0 0 0 3px",
+      borderStyle: "solid",
+      borderColor: new vscode.ThemeColor("testing.iconPassed"),
+      isWholeLine: true,
+    });
 
-    // Blue left border for in-progress tasks
-    this.inProgressDecorationType =
-      vscode.window.createTextEditorDecorationType({
-        borderWidth: "0 0 0 3px",
-        borderStyle: "solid",
-        borderColor: new vscode.ThemeColor("charts.blue"),
-        isWholeLine: true,
-      });
-
-    // Gray background for phase headers (not complete)
+    // Phase header styling (not complete)
     this.phaseHeaderDecorationType =
       vscode.window.createTextEditorDecorationType({
         borderWidth: "0 0 0 4px",
@@ -49,8 +37,8 @@ export class TaskDecorator {
         ),
       });
 
-    // Green background for completed phase headers
-    this.completedPhaseDecorationType =
+    // Completed phase header styling
+    this.completedPhaseHeaderDecorationType =
       vscode.window.createTextEditorDecorationType({
         borderWidth: "0 0 0 4px",
         borderStyle: "solid",
@@ -82,57 +70,59 @@ export class TaskDecorator {
     const tasks = parseTasksFile(content, changeId);
     const lines = content.split("\n");
 
-    const notStartedRanges: vscode.Range[] = [];
-    const completedRanges: vscode.Range[] = [];
-    const inProgressRanges: vscode.Range[] = [];
+    const grayBarRanges: vscode.Range[] = [];
+    const greenBarRanges: vscode.Range[] = [];
     const phaseHeaderRanges: vscode.Range[] = [];
-    const completedPhaseRanges: vscode.Range[] = [];
+    const completedPhaseHeaderRanges: vscode.Range[] = [];
 
-    const processTask = (task: Task) => {
-      const line = editor.document.lineAt(task.line);
-      const range = new vscode.Range(
-        new vscode.Position(task.line, 0),
-        new vscode.Position(task.line, 0)
-      );
-
-      if (task.status === "completed") {
-        completedRanges.push(range);
-      } else if (task.status === "in-progress") {
-        inProgressRanges.push(range);
-      } else {
-        notStartedRanges.push(range);
-      }
-
-      task.children.forEach(processTask);
-    };
-
-    tasks.forEach(processTask);
-
-    // Detect phase headers and color them based on completion status
+    // Detect phases and apply continuous bars
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line.match(/^##\s+Phase\s+\d+:/)) {
         const phaseTasks = this.getTasksForPhase(tasks, i, lines);
+
+        // Find the end of the phase (next phase or end of file)
+        let endLine = lines.length - 1;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (lines[j].match(/^##\s+Phase\s+\d+:/)) {
+            endLine = j - 1;
+            break;
+          }
+        }
+
         const allCompleted =
           phaseTasks.length > 0 &&
           phaseTasks.every((t) => t.status === "completed");
-        const range = new vscode.Range(i, 0, i, line.length);
 
-        if (allCompleted) {
-          completedPhaseRanges.push(range);
-        } else {
-          phaseHeaderRanges.push(range);
+        // Apply bar to entire phase (header + all lines until next phase)
+        for (let lineNum = i; lineNum <= endLine; lineNum++) {
+          const range = new vscode.Range(lineNum, 0, lineNum, 0);
+
+          if (lineNum === i) {
+            // Phase header gets special treatment
+            if (allCompleted) {
+              completedPhaseHeaderRanges.push(range);
+            } else {
+              phaseHeaderRanges.push(range);
+            }
+          } else {
+            // All other lines in the phase get the continuous bar
+            if (allCompleted) {
+              greenBarRanges.push(range);
+            } else {
+              grayBarRanges.push(range);
+            }
+          }
         }
       }
     }
 
-    editor.setDecorations(this.taskDecorationType, notStartedRanges);
-    editor.setDecorations(this.completedDecorationType, completedRanges);
-    editor.setDecorations(this.inProgressDecorationType, inProgressRanges);
+    editor.setDecorations(this.grayBarDecorationType, grayBarRanges);
+    editor.setDecorations(this.greenBarDecorationType, greenBarRanges);
     editor.setDecorations(this.phaseHeaderDecorationType, phaseHeaderRanges);
     editor.setDecorations(
-      this.completedPhaseDecorationType,
-      completedPhaseRanges
+      this.completedPhaseHeaderDecorationType,
+      completedPhaseHeaderRanges
     );
   }
 
@@ -169,10 +159,9 @@ export class TaskDecorator {
   }
 
   public dispose() {
-    this.taskDecorationType.dispose();
-    this.completedDecorationType.dispose();
-    this.inProgressDecorationType.dispose();
+    this.grayBarDecorationType.dispose();
+    this.greenBarDecorationType.dispose();
     this.phaseHeaderDecorationType.dispose();
-    this.completedPhaseDecorationType.dispose();
+    this.completedPhaseHeaderDecorationType.dispose();
   }
 }
