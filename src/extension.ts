@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import { TaskCodeLensProvider } from "./providers/taskCodeLensProvider";
 import { runTask } from "./commands/runTask";
+import { runPhase } from "./commands/runPhase";
 import type { Task } from "./models/task";
 
 // This method is called when your extension is activated
@@ -26,6 +27,16 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("openspec.runTask", (task: Task) => {
       runTask(task);
     })
+  );
+
+  // Register run phase command
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "openspec.runPhase",
+      (phaseTasks: Task[]) => {
+        runPhase(phaseTasks);
+      }
+    )
   );
 
   // Watch for changes to tasks.md files to refresh CodeLens

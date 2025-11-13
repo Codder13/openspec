@@ -106,7 +106,17 @@ export function formatPrompt(
     "Please implement the current task above following OpenSpec methodology and project conventions from the context files. ";
   prompt +=
     "Review the specification deltas to understand what requirements to implement. ";
-  prompt += "Previous tasks show what has already been completed.\n";
+  prompt += "Previous tasks show what has already been completed.\n\n";
+
+  prompt += "**IMPORTANT:** After completing this task:\n";
+  prompt += `1. Update the task status in @${path.join(
+    context.changeRoot,
+    "tasks.md"
+  )}\n`;
+  prompt +=
+    "2. Change the checkbox from `[ ]` to `[-]` (in-progress) or `[x]` (completed)\n";
+  prompt +=
+    "3. This helps track progress and provides visibility into what's been done\n";
 
   return prompt;
 }

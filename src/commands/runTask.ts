@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "node:path";
 import type { Task } from "../models/task";
 import { buildContext, formatPrompt } from "../context/contextBuilder";
 

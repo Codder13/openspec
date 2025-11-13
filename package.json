@@ -24,6 +24,10 @@
       {
         "command": "openspec.runTask",
         "title": "OpenSpec: Run Task"
+      },
+      {
+        "command": "openspec.runPhase",
+        "title": "OpenSpec: Run Phase"
       }
     ]
   },
