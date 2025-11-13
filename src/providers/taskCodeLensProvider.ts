@@ -45,9 +45,17 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
 
           if (phaseTasks.length > 0) {
             const range = new vscode.Range(i, 0, i, 0);
+
+            // Check if all tasks in the phase are completed (including nested children)
+            const allCompleted = this.areAllTasksCompleted(phaseTasks);
+
+            const title = allCompleted
+              ? "$(pass-filled) Phase completed"
+              : "$(run-all) Run entire phase";
+
             codeLenses.push(
               new vscode.CodeLens(range, {
-                title: "$(run-all) Run entire phase",
+                title: title,
                 command: "openspec.runPhase",
                 arguments: [phaseTasks],
               })
@@ -127,6 +135,19 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
 
     collectTasks(tasks);
     return phaseTasks;
+  }
+
+  private areAllTasksCompleted(phaseTasks: Task[]): boolean {
+    // Recursively check if all tasks and their children are completed
+    const checkTask = (task: Task): boolean => {
+      if (task.status !== "completed") {
+        return false;
+      }
+      // Check all children recursively
+      return task.children.every((child) => checkTask(child));
+    };
+
+    return phaseTasks.length > 0 && phaseTasks.every((task) => checkTask(task));
   }
 
   public refresh(): void {

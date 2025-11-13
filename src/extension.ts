@@ -10,94 +10,94 @@ import type { Task } from "./models/task";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "openspec" is now active!');
+	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// This line of code will only be executed once when your extension is activated
+	console.log('Congratulations, your extension "openspec" is now active!');
 
-  // Register CodeLens provider for tasks.md files
-  const codeLensProvider = new TaskCodeLensProvider();
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      { pattern: "**/openspec/changes/*/tasks.md" },
-      codeLensProvider
-    )
-  );
+	// Register CodeLens provider for tasks.md files
+	const codeLensProvider = new TaskCodeLensProvider();
+	context.subscriptions.push(
+		vscode.languages.registerCodeLensProvider(
+			{ pattern: "**/openspec/changes/*/tasks.md" },
+			codeLensProvider,
+		),
+	);
 
-  // Register task decorator for visual styling
-  const taskDecorator = new TaskDecorator();
-  context.subscriptions.push(taskDecorator);
+	// Register task decorator for visual styling
+	const taskDecorator = new TaskDecorator();
+	context.subscriptions.push(taskDecorator);
 
-  // Update decorations when active editor changes
-  vscode.window.onDidChangeActiveTextEditor(
-    (editor) => {
-      if (editor) {
-        taskDecorator.updateDecorations(editor);
-      }
-    },
-    null,
-    context.subscriptions
-  );
+	// Update decorations when active editor changes
+	vscode.window.onDidChangeActiveTextEditor(
+		(editor) => {
+			if (editor) {
+				taskDecorator.updateDecorations(editor);
+			}
+		},
+		null,
+		context.subscriptions,
+	);
 
-  // Update decorations when text document changes
-  vscode.workspace.onDidChangeTextDocument(
-    (event) => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && event.document === editor.document) {
-        taskDecorator.updateDecorations(editor);
-      }
-    },
-    null,
-    context.subscriptions
-  );
+	// Update decorations when text document changes
+	vscode.workspace.onDidChangeTextDocument(
+		(event) => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor && event.document === editor.document) {
+				taskDecorator.updateDecorations(editor);
+			}
+		},
+		null,
+		context.subscriptions,
+	);
 
-  // Update decorations for the active editor on activation
-  if (vscode.window.activeTextEditor) {
-    taskDecorator.updateDecorations(vscode.window.activeTextEditor);
-  }
+	// Update decorations for the active editor on activation
+	if (vscode.window.activeTextEditor) {
+		taskDecorator.updateDecorations(vscode.window.activeTextEditor);
+	}
 
-  // Register run task command
-  context.subscriptions.push(
-    vscode.commands.registerCommand("openspec.runTask", (task: Task) => {
-      runTask(task);
-    })
-  );
+	// Register run task command
+	context.subscriptions.push(
+		vscode.commands.registerCommand("openspec.runTask", (task: Task) => {
+			runTask(task);
+		}),
+	);
 
-  // Register run phase command
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "openspec.runPhase",
-      (phaseTasks: Task[]) => {
-        runPhase(phaseTasks);
-      }
-    )
-  );
+	// Register run phase command
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			"openspec.runPhase",
+			(phaseTasks: Task[]) => {
+				runPhase(phaseTasks);
+			},
+		),
+	);
 
-  // Watch for changes to tasks.md files to refresh CodeLens and decorations
-  const fileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/openspec/changes/*/tasks.md"
-  );
-  fileWatcher.onDidChange(() => {
-    codeLensProvider.refresh();
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-      taskDecorator.updateDecorations(editor);
-    }
-  });
-  fileWatcher.onDidCreate(() => {
-    codeLensProvider.refresh();
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-      taskDecorator.updateDecorations(editor);
-    }
-  });
-  fileWatcher.onDidDelete(() => {
-    codeLensProvider.refresh();
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-      taskDecorator.updateDecorations(editor);
-    }
-  });
-  context.subscriptions.push(fileWatcher);
+	// Watch for changes to tasks.md files to refresh CodeLens and decorations
+	const fileWatcher = vscode.workspace.createFileSystemWatcher(
+		"**/openspec/changes/*/tasks.md",
+	);
+	fileWatcher.onDidChange(() => {
+		codeLensProvider.refresh();
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			taskDecorator.updateDecorations(editor);
+		}
+	});
+	fileWatcher.onDidCreate(() => {
+		codeLensProvider.refresh();
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			taskDecorator.updateDecorations(editor);
+		}
+	});
+	fileWatcher.onDidDelete(() => {
+		codeLensProvider.refresh();
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			taskDecorator.updateDecorations(editor);
+		}
+	});
+	context.subscriptions.push(fileWatcher);
 }
 
 // This method is called when your extension is deactivated
