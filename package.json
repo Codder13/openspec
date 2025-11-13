@@ -2,7 +2,7 @@
   "name": "openspec",
   "displayName": "OpenSpec",
   "description": "The complimentary extension for using openspec with VS Code",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Codder13",
   "icon": "public/openspec_logo.png",
   "repository": {
