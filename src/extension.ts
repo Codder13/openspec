@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { TaskCodeLensProvider } from "./providers/taskCodeLensProvider";
+import { TaskDecorator } from "./decorations/taskDecorator";
 import { runTask } from "./commands/runTask";
 import { runPhase } from "./commands/runPhase";
 import type { Task } from "./models/task";
@@ -21,6 +22,38 @@ export function activate(context: vscode.ExtensionContext) {
       codeLensProvider
     )
   );
+
+  // Register task decorator for visual styling
+  const taskDecorator = new TaskDecorator();
+  context.subscriptions.push(taskDecorator);
+
+  // Update decorations when active editor changes
+  vscode.window.onDidChangeActiveTextEditor(
+    (editor) => {
+      if (editor) {
+        taskDecorator.updateDecorations(editor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  // Update decorations when text document changes
+  vscode.workspace.onDidChangeTextDocument(
+    (event) => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && event.document === editor.document) {
+        taskDecorator.updateDecorations(editor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  // Update decorations for the active editor on activation
+  if (vscode.window.activeTextEditor) {
+    taskDecorator.updateDecorations(vscode.window.activeTextEditor);
+  }
 
   // Register run task command
   context.subscriptions.push(

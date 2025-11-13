@@ -62,25 +62,21 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
           const line = document.lineAt(task.line);
           const range = new vscode.Range(line.range.start, line.range.start);
 
-          const statusIcon =
-            task.status === "completed"
-              ? "✓"
-              : task.status === "in-progress"
-              ? "●"
-              : "▶";
-          const actionText =
-            task.status === "completed"
-              ? "Rerun task"
-              : task.status === "in-progress"
-              ? "Continue task"
-              : "Start task";
-
-          const icon =
-            task.status === "completed" ? "$(check)" : "$(debug-start)";
+          let title: string;
+          if (task.status === "completed") {
+            // Green checkmark for completed tasks
+            title = "$(pass-filled) Task completed";
+          } else if (task.status === "in-progress") {
+            // Blue/gray for in-progress
+            title = "$(debug-start) Continue task";
+          } else {
+            // Gray for not started
+            title = "$(debug-start) Start task";
+          }
 
           codeLenses.push(
             new vscode.CodeLens(range, {
-              title: `${icon} ${actionText}`,
+              title: title,
               command: "openspec.runTask",
               arguments: [task],
             })

@@ -6,42 +6,59 @@ export class TaskDecorator {
   private taskDecorationType: vscode.TextEditorDecorationType;
   private completedDecorationType: vscode.TextEditorDecorationType;
   private inProgressDecorationType: vscode.TextEditorDecorationType;
+  private phaseHeaderDecorationType: vscode.TextEditorDecorationType;
+  private completedPhaseDecorationType: vscode.TextEditorDecorationType;
 
   constructor() {
-    // Gray text with left border for not-started tasks
+    // Gray left border for not-started tasks
     this.taskDecorationType = vscode.window.createTextEditorDecorationType({
-      before: {
-        contentText: "▶ Start task",
-        color: new vscode.ThemeColor("editorCodeLens.foreground"),
-        margin: "0 1em 0 0",
-      },
+      borderWidth: "0 0 0 3px",
+      borderStyle: "solid",
+      borderColor: new vscode.ThemeColor("editorLineNumber.foreground"),
       isWholeLine: true,
-      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
     });
 
-    // Green checkmark for completed
+    // Green left border for completed tasks
     this.completedDecorationType = vscode.window.createTextEditorDecorationType(
       {
-        before: {
-          contentText: "✓ Rerun task",
-          color: new vscode.ThemeColor("testing.iconPassed"),
-          margin: "0 1em 0 0",
-        },
+        borderWidth: "0 0 0 3px",
+        borderStyle: "solid",
+        borderColor: new vscode.ThemeColor("testing.iconPassed"),
         isWholeLine: true,
-        rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
       }
     );
 
-    // Blue circle for in-progress
+    // Blue left border for in-progress tasks
     this.inProgressDecorationType =
       vscode.window.createTextEditorDecorationType({
-        before: {
-          contentText: "● Continue task",
-          color: new vscode.ThemeColor("charts.blue"),
-          margin: "0 1em 0 0",
-        },
+        borderWidth: "0 0 0 3px",
+        borderStyle: "solid",
+        borderColor: new vscode.ThemeColor("charts.blue"),
         isWholeLine: true,
-        rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+      });
+
+    // Gray background for phase headers (not complete)
+    this.phaseHeaderDecorationType =
+      vscode.window.createTextEditorDecorationType({
+        borderWidth: "0 0 0 4px",
+        borderStyle: "solid",
+        borderColor: new vscode.ThemeColor("editorLineNumber.foreground"),
+        isWholeLine: true,
+        backgroundColor: new vscode.ThemeColor(
+          "editor.lineHighlightBackground"
+        ),
+      });
+
+    // Green background for completed phase headers
+    this.completedPhaseDecorationType =
+      vscode.window.createTextEditorDecorationType({
+        borderWidth: "0 0 0 4px",
+        borderStyle: "solid",
+        borderColor: new vscode.ThemeColor("testing.iconPassed"),
+        isWholeLine: true,
+        backgroundColor: new vscode.ThemeColor(
+          "editor.lineHighlightBackground"
+        ),
       });
   }
 
@@ -61,11 +78,15 @@ export class TaskDecorator {
     }
 
     const changeId = changeIdMatch[1];
-    const tasks = parseTasksFile(editor.document.getText(), changeId);
+    const content = editor.document.getText();
+    const tasks = parseTasksFile(content, changeId);
+    const lines = content.split("\n");
 
     const notStartedRanges: vscode.Range[] = [];
     const completedRanges: vscode.Range[] = [];
     const inProgressRanges: vscode.Range[] = [];
+    const phaseHeaderRanges: vscode.Range[] = [];
+    const completedPhaseRanges: vscode.Range[] = [];
 
     const processTask = (task: Task) => {
       const line = editor.document.lineAt(task.line);
@@ -87,14 +108,71 @@ export class TaskDecorator {
 
     tasks.forEach(processTask);
 
+    // Detect phase headers and color them based on completion status
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.match(/^##\s+Phase\s+\d+:/)) {
+        const phaseTasks = this.getTasksForPhase(tasks, i, lines);
+        const allCompleted =
+          phaseTasks.length > 0 &&
+          phaseTasks.every((t) => t.status === "completed");
+        const range = new vscode.Range(i, 0, i, line.length);
+
+        if (allCompleted) {
+          completedPhaseRanges.push(range);
+        } else {
+          phaseHeaderRanges.push(range);
+        }
+      }
+    }
+
     editor.setDecorations(this.taskDecorationType, notStartedRanges);
     editor.setDecorations(this.completedDecorationType, completedRanges);
     editor.setDecorations(this.inProgressDecorationType, inProgressRanges);
+    editor.setDecorations(this.phaseHeaderDecorationType, phaseHeaderRanges);
+    editor.setDecorations(
+      this.completedPhaseDecorationType,
+      completedPhaseRanges
+    );
+  }
+
+  private getTasksForPhase(
+    tasks: Task[],
+    phaseLineNum: number,
+    lines: string[]
+  ): Task[] {
+    const phaseTasks: Task[] = [];
+
+    // Find the next phase header or end of file
+    let endLine = lines.length;
+    for (let i = phaseLineNum + 1; i < lines.length; i++) {
+      if (lines[i].match(/^##\s+Phase\s+\d+:/)) {
+        endLine = i;
+        break;
+      }
+    }
+
+    // Collect all tasks between this phase and the next
+    const collectTasks = (taskList: Task[]) => {
+      for (const task of taskList) {
+        if (task.line > phaseLineNum && task.line < endLine) {
+          phaseTasks.push(task);
+        }
+        if (task.children.length > 0) {
+          collectTasks(task.children);
+        }
+      }
+    };
+
+    collectTasks(tasks);
+    return phaseTasks;
   }
 
   public dispose() {
     this.taskDecorationType.dispose();
     this.completedDecorationType.dispose();
     this.inProgressDecorationType.dispose();
+    this.phaseHeaderDecorationType.dispose();
+    this.completedPhaseDecorationType.dispose();
   }
 }
