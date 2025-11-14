@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
-import { parseTasksFile, findTaskAtLine } from "../parsers/taskParser";
+import { parseTasksFile, isPhaseHeading } from "../parsers/taskParser";
 import { runTask } from "../commands/runTask";
 import type { Task } from "../models/task";
 
@@ -42,10 +42,7 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
       const lines = document.getText().split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        // Match phase headers: ## Phase N: Title
-        const phaseMatch = line.match(/^##\s+(Phase\s+\d+:.*?)$/);
-        if (phaseMatch) {
-          const phaseTitle = phaseMatch[1];
+        if (isPhaseHeading(line)) {
           const phaseTasks = this.getTasksForPhase(tasks, i, lines);
 
           if (phaseTasks.length > 0) {
@@ -123,7 +120,7 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
     // Find the next phase header or end of file
     let endLine = lines.length;
     for (let i = phaseLineNum + 1; i < lines.length; i++) {
-      if (lines[i].match(/^##\s+Phase\s+\d+:/)) {
+      if (isPhaseHeading(lines[i])) {
         endLine = i;
         break;
       }
