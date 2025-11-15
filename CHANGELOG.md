@@ -4,6 +4,11 @@ All notable changes to the "openspec" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.5] - 2025-11-15
+
+### Changed
+- Lowered the minimum VS Code version to the latest stable release (1.94.0) so the extension can run on the standard build instead of requiring Insiders.
+
 ## [0.0.4] - 2025-11-14
 
 ### Added

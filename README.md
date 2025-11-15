@@ -30,7 +30,7 @@ The AI assistant will have all the context needed to help you implement the task
 
 ## Requirements
 
-- VS Code 1.106.0 or higher
+- VS Code 1.94.0 or higher
 - OpenSpec-initialized workspace
 - GitHub Copilot (recommended) or other AI chat extension
 
